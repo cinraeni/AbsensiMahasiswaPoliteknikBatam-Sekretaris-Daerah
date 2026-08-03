@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const records = data[dateStr];
             
             const groupDiv = document.createElement('div');
-            groupDiv.className = 'history-group';
+            groupDiv.className = 'history-group glass-panel';
             
             groupDiv.innerHTML = `
                 <div class="history-date">${formattedDate}</div>
