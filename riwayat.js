@@ -9,11 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveEditBtn = document.getElementById('save-edit-btn');
     
     let currentEditDate = null;
-    let currentEditIndex = null;
+    let currentEditId = null;
     let currentEditName = null;
 
-    const data = JSON.parse(localStorage.getItem('absensiData')) || {};
-    let dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a)); // Sort terbaru di atas
+    let data = {};
+    let dates = [];
 
     // Buat daftar bulan dari bulan saat ini hingga April 2027
     const startDate = new Date(); 
@@ -35,6 +35,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Tambah 1 bulan
         currentLoopDate.setMonth(currentLoopDate.getMonth() + 1);
+    }
+
+    // Fungsi mengambil data dari server
+    async function loadData() {
+        try {
+            const response = await fetch('api/get_absensi.php');
+            data = await response.json();
+            dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+            renderHistory(filterMonth.value);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            historyContainer.innerHTML = '<p style="text-align:center; color:red; padding: 1rem 0;">Gagal mengambil data dari server.</p>';
+        }
     }
 
     // Fungsi Render
@@ -72,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             groupDiv.innerHTML = `
                 <div class="history-date">${formattedDate}</div>
                 <ul class="attendance-list">
-                    ${records.map((record, index) => {
+                    ${records.map((record) => {
                         let statusClass = '';
                         if (record.status === 'Hadir') statusClass = 'hadir';
                         else if (record.status === 'Izin' || record.status === 'Tidak Hadir') statusClass = 'tidak-hadir';
@@ -86,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div style="display: flex; align-items: center; gap: 1rem;">
                                     <span class="status-badge ${statusClass}">${record.status}</span>
                                     <div class="action-btns">
-                                        <button class="btn-small btn-edit" data-date="${dateStr}" data-index="${index}" data-name="${record.name}" data-status="${record.status}">Edit</button>
-                                        <button class="btn-small btn-delete" data-date="${dateStr}" data-index="${index}" data-name="${record.name}">Hapus</button>
+                                        <button class="btn-small btn-edit" data-date="${dateStr}" data-id="${record.id}" data-name="${record.name}" data-status="${record.status}">Edit</button>
+                                        <button class="btn-small btn-delete" data-date="${dateStr}" data-id="${record.id}" data-name="${record.name}">Hapus</button>
                                     </div>
                                 </div>
                             </li>
@@ -100,8 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Render pertama kali (Semua Bulan)
-    renderHistory();
+    // Panggil loadData pertama kali
+    loadData();
 
     // Event Listener untuk Filter
     filterMonth.addEventListener('change', (e) => {
@@ -109,29 +122,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Event Listener untuk Tombol Edit dan Hapus
-    historyContainer.addEventListener('click', (e) => {
+    historyContainer.addEventListener('click', async (e) => {
         if (e.target.classList.contains('btn-delete')) {
-            const dateStr = e.target.getAttribute('data-date');
-            const index = parseInt(e.target.getAttribute('data-index'));
+            const id = e.target.getAttribute('data-id');
             const name = e.target.getAttribute('data-name');
             
-            if (confirm(`Apakah Anda yakin ingin menghapus data absensi ${name} pada tanggal tersebut?`)) {
-                data[dateStr].splice(index, 1);
-                
-                // Jika array kosong, hapus key dari objek
-                if (data[dateStr].length === 0) {
-                    delete data[dateStr];
-                    dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+            if (confirm(`Apakah Anda yakin ingin menghapus data absensi ${name}?`)) {
+                try {
+                    const response = await fetch('api/delete_absensi.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    });
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        loadData(); // Refresh data
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error('Error deleting:', error);
+                    alert('Gagal menghapus data.');
                 }
-                
-                localStorage.setItem('absensiData', JSON.stringify(data));
-                renderHistory(filterMonth.value);
             }
         }
         
         if (e.target.classList.contains('btn-edit')) {
             currentEditDate = e.target.getAttribute('data-date');
-            currentEditIndex = parseInt(e.target.getAttribute('data-index'));
+            currentEditId = e.target.getAttribute('data-id');
             currentEditName = e.target.getAttribute('data-name');
             const currentStatus = e.target.getAttribute('data-status');
 
@@ -149,17 +168,34 @@ document.addEventListener('DOMContentLoaded', () => {
         editModal.classList.add('hidden');
     });
 
-    saveEditBtn.addEventListener('click', () => {
+    saveEditBtn.addEventListener('click', async () => {
         const selectedRadio = document.querySelector('input[name="edit-status"]:checked');
         if (!selectedRadio) return;
 
         const newStatus = selectedRadio.value;
+        saveEditBtn.textContent = 'Menyimpan...';
+        saveEditBtn.disabled = true;
         
-        // Update data
-        data[currentEditDate][currentEditIndex].status = newStatus;
-        localStorage.setItem('absensiData', JSON.stringify(data));
-        
-        editModal.classList.add('hidden');
-        renderHistory(filterMonth.value);
+        try {
+            const response = await fetch('api/update_absensi.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: currentEditId, status: newStatus })
+            });
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                editModal.classList.add('hidden');
+                loadData(); // Refresh data
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error updating:', error);
+            alert('Gagal memperbarui data.');
+        } finally {
+            saveEditBtn.textContent = 'Simpan Perubahan';
+            saveEditBtn.disabled = false;
+        }
     });
 });

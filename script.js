@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle Submit
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         if (isWeekend) return;
@@ -35,36 +35,37 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        saveAttendance(name, status);
-        form.reset();
-        showAlert('Absensi berhasil disimpan!', 'success');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Menyimpan...';
+
+        await saveAttendance(name, status);
         
-        // Reset selected styling if needed or rely on radio default
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Kirim Absensi';
     });
 
-    function saveAttendance(name, status) {
-        const todayStr = currentDate.toISOString().split('T')[0];
-        let data = JSON.parse(localStorage.getItem('absensiData')) || {};
-        
-        if (!data[todayStr]) {
-            data[todayStr] = [];
+    async function saveAttendance(name, status) {
+        try {
+            const response = await fetch('api/save_absensi.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, status })
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                form.reset();
+                showAlert(result.message, 'success');
+            } else {
+                showAlert(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Terjadi kesalahan saat menyimpan data.', 'error');
         }
-
-        // Cek apakah sudah absen hari ini
-        const alreadyAbsen = data[todayStr].find(item => item.name === name);
-        
-        if (alreadyAbsen) {
-            showAlert(`${name} sudah melakukan absensi hari ini.`, 'error');
-            return;
-        }
-
-        const newRecord = {
-            name,
-            status
-        };
-
-        data[todayStr].push(newRecord);
-        localStorage.setItem('absensiData', JSON.stringify(data));
     }
 
     function showAlert(message, type) {
