@@ -222,10 +222,10 @@ select option {
     font-weight: 600;
 }
 
-/* Status badging all in Blue and White variations */
-.status-badge.hadir { background: var(--primary); color: #ffffff; }
-.status-badge.izin { background: #dbeafe; color: var(--primary); border: 1px solid var(--primary); }
-.status-badge.sakit { background: #ffffff; color: var(--primary); border: 1px dashed var(--primary); }
+/* Status badging */
+.status-badge.hadir { background: #d1fae5; color: #059669; border: 1px solid #10b981; }
+.status-badge.sakit { background: #fef3c7; color: #d97706; border: 1px solid #f59e0b; }
+.status-badge.tidak-hadir, .status-badge.izin { background: #fee2e2; color: #dc2626; border: 1px solid #ef4444; }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }

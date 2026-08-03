@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${records.map((record, index) => {
                         let statusClass = '';
                         if (record.status === 'Hadir') statusClass = 'hadir';
-                        else if (record.status === 'Izin') statusClass = 'izin';
+                        else if (record.status === 'Izin' || record.status === 'Tidak Hadir') statusClass = 'tidak-hadir';
                         else if (record.status === 'Sakit') statusClass = 'sakit';
 
                         return `
