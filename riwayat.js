@@ -82,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             <li>
                                 <div class="info">
                                     <strong>${record.name}</strong> 
-                                    <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">${record.time}</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 1rem;">
                                     <span class="status-badge ${statusClass}">${record.status}</span>

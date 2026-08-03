@@ -60,8 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const newRecord = {
             name,
-            status,
-            time: currentDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+            status
         };
 
         data[todayStr].push(newRecord);
