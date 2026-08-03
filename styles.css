@@ -195,24 +195,24 @@ select option {
 }
 
 .attendance-list li {
-    padding: 0.75rem;
-    background: #f8fafc;
-    border: 1px solid var(--glass-border);
-    border-radius: 6px;
-    margin-bottom: 0.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--glass-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     animation: fadeIn 0.3s ease;
 }
 
+.attendance-list li:last-child {
+    border-bottom: none;
+}
+
 .attendance-list li.empty-state {
-    background: none;
-    border: none;
     text-align: center;
     color: var(--text-muted);
     justify-content: center;
+    border: none;
 }
 
 .status-badge {
@@ -312,21 +312,15 @@ select option {
     max-width: 400px;
 }
 
-/* History Date Cards */
+/* History Date Groups - Flat Design */
 .history-group {
-    background: #ffffff;
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+    margin-bottom: 2rem;
 }
 
 .history-date {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--primary);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px dashed var(--glass-border);
 }
