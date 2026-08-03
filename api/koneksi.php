@@ -9,16 +9,25 @@ $user = 'root';
 $pass = ''; // Default laragon password is empty
 $db = 'db_absensi';
 
-// Membuat koneksi
-$conn = new mysqli($host, $user, $pass, $db);
+// Membuat koneksi TANPA database terlebih dahulu
+$conn = new mysqli($host, $user, $pass);
 
 // Memeriksa koneksi
 if ($conn->connect_error) {
-    die(json_encode(["status" => "error", "message" => "Koneksi database gagal: " . $conn->connect_error]));
+    die(json_encode(["status" => "error", "message" => "Koneksi ke MySQL gagal: " . $conn->connect_error]));
 }
 
+// Buat database jika belum ada
+$sql_db = "CREATE DATABASE IF NOT EXISTS `$db`";
+if ($conn->query($sql_db) === FALSE) {
+    die(json_encode(["status" => "error", "message" => "Gagal membuat database: " . $conn->error]));
+}
+
+// Pilih database tersebut
+$conn->select_db($db);
+
 // Otomatis membuat tabel jika belum ada
-$sql = "CREATE TABLE IF NOT EXISTS riwayat_absensi (
+$sql_table = "CREATE TABLE IF NOT EXISTS riwayat_absensi (
     id INT(11) AUTO_INCREMENT PRIMARY KEY,
     nama VARCHAR(100) NOT NULL,
     tanggal DATE NOT NULL,
@@ -26,7 +35,7 @@ $sql = "CREATE TABLE IF NOT EXISTS riwayat_absensi (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
 
-if ($conn->query($sql) === FALSE) {
+if ($conn->query($sql_table) === FALSE) {
     die(json_encode(["status" => "error", "message" => "Gagal membuat tabel: " . $conn->error]));
 }
 ?>
