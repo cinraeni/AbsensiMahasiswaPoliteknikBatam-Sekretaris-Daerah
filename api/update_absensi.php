@@ -9,23 +9,17 @@ if (!$input || !isset($input['id']) || !isset($input['status'])) {
 }
 
 $id = intval($input['id']);
-$status = $input['status'];
+$status = mysqli_real_escape_string($koneksi, $input['status']);
 
-$all_data = get_data();
-$found = false;
+$update_query = "UPDATE riwayat_absensi SET status = '$status' WHERE id = $id";
 
-foreach ($all_data as &$row) {
-    if ($row['id'] === $id) {
-        $row['status'] = $status;
-        $found = true;
-        break;
+if (mysqli_query($koneksi, $update_query)) {
+    if (mysqli_affected_rows($koneksi) > 0) {
+        echo json_encode(["status" => "success", "message" => "Data berhasil diperbarui."]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Data tidak ditemukan atau tidak ada perubahan."]);
     }
-}
-
-if ($found) {
-    save_data($all_data);
-    echo json_encode(["status" => "success", "message" => "Data berhasil diperbarui."]);
 } else {
-    echo json_encode(["status" => "error", "message" => "Data tidak ditemukan."]);
+    echo json_encode(["status" => "error", "message" => "Gagal memperbarui data: " . mysqli_error($koneksi)]);
 }
 ?>

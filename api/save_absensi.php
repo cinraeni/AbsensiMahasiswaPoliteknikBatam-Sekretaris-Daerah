@@ -8,36 +8,25 @@ if (!$input || !isset($input['name']) || !isset($input['status'])) {
     exit;
 }
 
-$nama = $input['name'];
-$status = $input['status'];
+$nama = mysqli_real_escape_string($koneksi, $input['name']);
+$status = mysqli_real_escape_string($koneksi, $input['status']);
 $tanggal = date('Y-m-d'); // Hari ini
 
-$all_data = get_data();
-
 // Cek apakah sudah absen hari ini
-foreach ($all_data as $row) {
-    if ($row['nama'] === $nama && $row['tanggal'] === $tanggal) {
-        echo json_encode(["status" => "error", "message" => "$nama sudah melakukan absensi hari ini."]);
-        exit;
-    }
+$cek_query = "SELECT id FROM riwayat_absensi WHERE nama = '$nama' AND tanggal = '$tanggal'";
+$cek_result = mysqli_query($koneksi, $cek_query);
+
+if (mysqli_num_rows($cek_result) > 0) {
+    echo json_encode(["status" => "error", "message" => "$nama sudah melakukan absensi hari ini."]);
+    exit;
 }
 
-// Cari ID tertinggi
-$max_id = 0;
-foreach ($all_data as $row) {
-    if ($row['id'] > $max_id) $max_id = $row['id'];
+// Simpan data
+$insert_query = "INSERT INTO riwayat_absensi (nama, tanggal, status) VALUES ('$nama', '$tanggal', '$status')";
+
+if (mysqli_query($koneksi, $insert_query)) {
+    echo json_encode(["status" => "success", "message" => "Absensi berhasil disimpan."]);
+} else {
+    echo json_encode(["status" => "error", "message" => "Gagal menyimpan absensi: " . mysqli_error($koneksi)]);
 }
-
-$new_id = $max_id + 1;
-$all_data[] = [
-    "id" => $new_id,
-    "nama" => $nama,
-    "tanggal" => $tanggal,
-    "status" => $status,
-    "created_at" => date('Y-m-d H:i:s')
-];
-
-save_data($all_data);
-
-echo json_encode(["status" => "success", "message" => "Absensi berhasil disimpan."]);
 ?>

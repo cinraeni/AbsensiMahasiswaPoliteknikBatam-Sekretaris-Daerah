@@ -9,18 +9,16 @@ if (!$input || !isset($input['id'])) {
 }
 
 $id = intval($input['id']);
-$all_data = get_data();
-$initial_count = count($all_data);
 
-$all_data = array_filter($all_data, function($row) use ($id) {
-    return $row['id'] !== $id;
-});
-$all_data = array_values($all_data); // Reset keys
+$delete_query = "DELETE FROM riwayat_absensi WHERE id = $id";
 
-if (count($all_data) < $initial_count) {
-    save_data($all_data);
-    echo json_encode(["status" => "success", "message" => "Data berhasil dihapus."]);
+if (mysqli_query($koneksi, $delete_query)) {
+    if (mysqli_affected_rows($koneksi) > 0) {
+        echo json_encode(["status" => "success", "message" => "Data berhasil dihapus."]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Gagal menghapus data: ID tidak ditemukan."]);
+    }
 } else {
-    echo json_encode(["status" => "error", "message" => "Gagal menghapus data: ID tidak ditemukan"]);
+    echo json_encode(["status" => "error", "message" => "Gagal menghapus data: " . mysqli_error($koneksi)]);
 }
 ?>

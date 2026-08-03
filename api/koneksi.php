@@ -4,21 +4,14 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header('Content-Type: application/json');
 
-$json_file = __DIR__ . '/data.json';
+$host = 'localhost';
+$user = 'root';
+$password = ''; // Default laragon/XAMPP tanpa password
+$database = 'db_absensi';
 
-// Inisialisasi file json jika belum ada
-if (!file_exists($json_file)) {
-    file_put_contents($json_file, json_encode([]));
-}
+$koneksi = mysqli_connect($host, $user, $password, $database);
 
-function get_data() {
-    global $json_file;
-    $content = file_get_contents($json_file);
-    return json_decode($content, true) ?: [];
-}
-
-function save_data($data) {
-    global $json_file;
-    file_put_contents($json_file, json_encode($data, JSON_PRETTY_PRINT));
+if (!$koneksi) {
+    die(json_encode(["status" => "error", "message" => "Koneksi database gagal: " . mysqli_connect_error()]));
 }
 ?>

@@ -1,27 +1,23 @@
 <?php
 require_once 'koneksi.php';
 
-$all_data = get_data();
+$query = "SELECT * FROM riwayat_absensi ORDER BY tanggal DESC, id DESC";
+$result = mysqli_query($koneksi, $query);
+
 $response = [];
 
-// Sort by date DESC, id DESC
-usort($all_data, function($a, $b) {
-    if ($a['tanggal'] === $b['tanggal']) {
-        return $b['id'] <=> $a['id'];
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $tanggal = $row['tanggal'];
+        if (!isset($response[$tanggal])) {
+            $response[$tanggal] = [];
+        }
+        $response[$tanggal][] = [
+            "id" => (int)$row['id'],
+            "name" => $row['nama'],
+            "status" => $row['status']
+        ];
     }
-    return strcmp($b['tanggal'], $a['tanggal']);
-});
-
-foreach ($all_data as $row) {
-    $tanggal = $row['tanggal'];
-    if (!isset($response[$tanggal])) {
-        $response[$tanggal] = [];
-    }
-    $response[$tanggal][] = [
-        "id" => $row['id'],
-        "name" => $row['nama'],
-        "status" => $row['status']
-    ];
 }
 
 echo json_encode($response);
