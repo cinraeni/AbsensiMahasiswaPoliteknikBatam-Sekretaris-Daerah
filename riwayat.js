@@ -1,3 +1,6 @@
+import { db } from './firebase-config.js';
+import { collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+
 document.addEventListener('DOMContentLoaded', () => {
     const historyContainer = document.getElementById('all-history');
     const filterMonth = document.getElementById('filter-month');
@@ -40,19 +43,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fungsi mengambil data dari server
     async function loadData() {
         try {
-            const response = await fetch('api/get_absensi.php');
-            data = await response.json();
+            const q = query(collection(db, "riwayat_absensi"), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
             
-            if (data.status === 'error') {
-                historyContainer.innerHTML = `<p style="text-align:center; color:red; padding: 1rem 0;">Gagal: ${data.message}</p>`;
-                return;
-            }
+            data = {};
+            querySnapshot.forEach((docSnap) => {
+                const record = docSnap.data();
+                const id = docSnap.id;
+                const dateStr = record.tanggal;
+                
+                if (!data[dateStr]) data[dateStr] = [];
+                data[dateStr].push({
+                    id: id,
+                    name: record.nama,
+                    status: record.status
+                });
+            });
             
             dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
             renderHistory(filterMonth.value);
         } catch (error) {
             console.error('Error fetching data:', error);
-            historyContainer.innerHTML = '<p style="text-align:center; color:red; padding: 1rem 0;">Gagal mengambil data dari server. Pastikan Anda mengakses aplikasi melalui server lokal (localhost), bukan dengan klik ganda file HTML, dan pastikan MySQL (Laragon) telah dijalankan.</p>';
+            historyContainer.innerHTML = '<p style="text-align:center; color:red; padding: 1rem 0;">Gagal mengambil data dari Firebase. Pastikan konfigurasi Firebase sudah benar.</p>';
         }
     }
 
@@ -135,18 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (confirm(`Apakah Anda yakin ingin menghapus data absensi ${name}?`)) {
                 try {
-                    const response = await fetch('api/delete_absensi.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id })
-                    });
-                    const result = await response.json();
-                    
-                    if (result.status === 'success') {
-                        loadData(); // Refresh data
-                    } else {
-                        alert(result.message);
-                    }
+                    await deleteDoc(doc(db, "riwayat_absensi", id));
+                    loadData(); // Refresh data
                 } catch (error) {
                     console.error('Error deleting:', error);
                     alert('Gagal menghapus data.');
@@ -163,7 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
             editInfo.textContent = `Nama: ${currentEditName} | Tanggal: ${currentEditDate}`;
             
             // Set radio button ke status saat ini
-            document.querySelector(`input[name="edit-status"][value="${currentStatus}"]`).checked = true;
+            const radioStatus = document.querySelector(`input[name="edit-status"][value="${currentStatus}"]`);
+            if (radioStatus) radioStatus.checked = true;
             
             editModal.classList.remove('hidden');
         }
@@ -183,19 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
         saveEditBtn.disabled = true;
         
         try {
-            const response = await fetch('api/update_absensi.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: currentEditId, status: newStatus })
+            await updateDoc(doc(db, "riwayat_absensi", currentEditId), {
+                status: newStatus
             });
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                editModal.classList.add('hidden');
-                loadData(); // Refresh data
-            } else {
-                alert(result.message);
-            }
+            editModal.classList.add('hidden');
+            loadData(); // Refresh data
         } catch (error) {
             console.error('Error updating:', error);
             alert('Gagal memperbarui data.');

@@ -1,3 +1,6 @@
+import { db } from './firebase-config.js';
+import { collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+
 document.addEventListener('DOMContentLoaded', () => {
     const dateDisplay = document.getElementById('current-date');
     const form = document.getElementById('attendance-form');
@@ -21,6 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
         disableForm();
     }
 
+    // Set nilai default input tanggal ke hari ini
+    const tanggalInput = document.getElementById('tanggal');
+    if (tanggalInput) {
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000; // offset in milliseconds
+        const localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
+        tanggalInput.value = localISOTime.split('T')[0];
+    }
+
     // Handle Submit
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -29,6 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const name = document.getElementById('employee-name').value;
         const status = document.querySelector('input[name="status"]:checked').value;
+        let tanggal = document.getElementById('tanggal') ? document.getElementById('tanggal').value : null;
+
+        if (!tanggal) {
+            const tzoffset = (new Date()).getTimezoneOffset() * 60000; 
+            tanggal = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
+        }
 
         if (!name) {
             showAlert('Silakan pilih nama karyawan.', 'error');
@@ -38,30 +55,40 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Menyimpan...';
 
-        await saveAttendance(name, status);
+        await saveAttendance(name, status, tanggal);
         
         submitBtn.disabled = false;
         submitBtn.textContent = 'Kirim Absensi';
     });
 
-    async function saveAttendance(name, status) {
+    async function saveAttendance(name, status, tanggal) {
         try {
-            const response = await fetch('api/save_absensi.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name, status })
+            // Cek apakah sudah absen di tanggal ini
+            const q = query(collection(db, "riwayat_absensi"), where("nama", "==", name), where("tanggal", "==", tanggal));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                showAlert(`${name} sudah melakukan absensi pada tanggal ini.`, 'error');
+                return;
+            }
+
+            // Simpan data ke Firestore
+            await addDoc(collection(db, "riwayat_absensi"), {
+                nama: name,
+                status: status,
+                tanggal: tanggal,
+                createdAt: new Date().toISOString()
             });
 
-            const result = await response.json();
-
-            if (result.status === 'success') {
-                form.reset();
-                showAlert(result.message, 'success');
-            } else {
-                showAlert(result.message, 'error');
+            form.reset();
+            
+            // Setel ulang tanggal ke hari ini setelah reset
+            if (tanggalInput) {
+                const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                tanggalInput.value = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
             }
+
+            showAlert('Absensi berhasil disimpan.', 'success');
         } catch (error) {
             console.error('Error:', error);
             showAlert('Terjadi kesalahan saat menyimpan data.', 'error');

@@ -34,7 +34,12 @@
 
         <main>
             <div class="top-nav" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                <a href="index.html" class="secondary-btn">&larr; Kembali ke Form Absensi</a>
+                <a href="index.html" class="secondary-btn" title="Kembali ke Form Absensi" style="padding: 0.5rem 0.8rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; width: 45px; height: 45px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
                 
                 <div class="filter-group" style="display: flex; align-items: center; gap: 0.5rem;">
                     <label for="filter-month" style="margin: 0; color: var(--text-main);">Bulan:</label>
@@ -80,6 +85,6 @@
         </div>
     </div>
 
-    <script src="riwayat.js"></script>
+    <script type="module" src="riwayat.js"></script>
 </body>
 </html>
