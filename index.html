@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi Sederhana</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Absensi Harian</h1>
+            <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-weight: 600; font-size: 1.1rem;">Mahasiswa Politeknik Negeri Batam</h3>
+            <p id="current-date" class="date-display">Memuat tanggal...</p>
+        </header>
+
+        <main>
+            <div id="alert-message" class="alert hidden"></div>
+
+            <form id="attendance-form" class="glass-panel">
+                <div class="form-group">
+                    <label for="employee-name">Pilih Nama Mahasiswa</label>
+                    <select id="employee-name" required>
+                        <option value="" disabled selected>-- Pilih Nama --</option>
+                        <option value="Cindy Anggraeni">Cindy Anggraeni</option>
+                        <option value="Faiza Irna Harahap">Faiza Irna Harahap</option>
+                
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status Kehadiran</label>
+                    <div class="radio-group">
+                        <label class="radio-card">
+                            <input type="radio" name="status" value="Hadir" required>
+                            <span class="card-content">Hadir</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="status" value="Izin">
+                            <span class="card-content">Izin</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="status" value="Sakit">
+                            <span class="card-content">Sakit</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn" class="primary-btn">Simpan Absensi</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a href="riwayat.html" class="secondary-btn">Lihat Riwayat Absensi</a>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Absensi</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .history-container {
+            max-width: 600px;
+        }
+        .history-group {
+            margin-bottom: 2rem;
+        }
+        .history-date {
+            font-size: 1.1rem;
+            color: #818cf8;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+        }
+        .top-nav {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container history-container">
+        <header>
+            <h1>Riwayat Absensi</h1>
+            <h3 style="color: var(--primary); font-weight: 600; font-size: 1.1rem; margin-top: 0.5rem;">Mahasiswa Politeknik Negeri Batam</h3>
+        </header>
+
+        <main>
+            <div class="top-nav" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <a href="index.html" class="secondary-btn">&larr; Kembali ke Form Absensi</a>
+                
+                <div class="filter-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label for="filter-month" style="margin: 0; color: var(--text-main);">Bulan:</label>
+                    <select id="filter-month" style="width: auto; min-width: 150px;">
+                        <option value="all">Semua Bulan</option>
+                        <!-- Opsi bulan akan di-generate oleh JS -->
+                    </select>
+                </div>
+            </div>
+            
+            <div id="all-history" class="glass-panel">
+                <!-- Data riwayat akan di-render di sini -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Edit -->
+    <div id="edit-modal" class="modal-overlay hidden">
+        <div class="glass-panel modal-content">
+            <h2>Edit Absensi</h2>
+            <p id="edit-info" style="margin-bottom: 1rem; color: var(--text-muted);"></p>
+            <div class="form-group">
+                <label>Status Baru:</label>
+                <div class="radio-group">
+                    <label class="radio-card">
+                        <input type="radio" name="edit-status" value="Hadir">
+                        <span class="card-content">Hadir</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="edit-status" value="Izin">
+                        <span class="card-content">Izin</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="edit-status" value="Sakit">
+                        <span class="card-content">Sakit</span>
+                    </label>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button id="cancel-edit-btn" class="secondary-btn" style="flex: 1;">Batal</button>
+                <button id="save-edit-btn" class="primary-btn" style="flex: 1;">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="riwayat.js"></script>
+</body>
+</html>
