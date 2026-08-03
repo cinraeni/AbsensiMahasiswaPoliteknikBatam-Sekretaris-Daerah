@@ -42,11 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('api/get_absensi.php');
             data = await response.json();
+            
+            if (data.status === 'error') {
+                historyContainer.innerHTML = `<p style="text-align:center; color:red; padding: 1rem 0;">Gagal: ${data.message}</p>`;
+                return;
+            }
+            
             dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
             renderHistory(filterMonth.value);
         } catch (error) {
             console.error('Error fetching data:', error);
-            historyContainer.innerHTML = '<p style="text-align:center; color:red; padding: 1rem 0;">Gagal mengambil data dari server.</p>';
+            historyContainer.innerHTML = '<p style="text-align:center; color:red; padding: 1rem 0;">Gagal mengambil data dari server. Pastikan Anda mengakses aplikasi melalui server lokal (localhost), bukan dengan klik ganda file HTML, dan pastikan MySQL (Laragon) telah dijalankan.</p>';
         }
     }
 

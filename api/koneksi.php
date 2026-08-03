@@ -9,12 +9,13 @@ $user = 'root';
 $pass = ''; // Default laragon password is empty
 $db = 'db_absensi';
 
-// Membuat koneksi TANPA database terlebih dahulu
-$conn = new mysqli($host, $user, $pass);
-
-// Memeriksa koneksi
-if ($conn->connect_error) {
-    die(json_encode(["status" => "error", "message" => "Koneksi ke MySQL gagal: " . $conn->connect_error]));
+try {
+    $conn = new mysqli($host, $user, $pass);
+    if ($conn->connect_error) {
+        die(json_encode(["status" => "error", "message" => "Koneksi ke MySQL gagal: " . $conn->connect_error]));
+    }
+} catch (Exception $e) {
+    die(json_encode(["status" => "error", "message" => "Koneksi ke MySQL gagal: " . $e->getMessage()]));
 }
 
 // Buat database jika belum ada
