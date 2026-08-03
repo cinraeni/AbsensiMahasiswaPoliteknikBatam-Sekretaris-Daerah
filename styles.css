@@ -311,3 +311,22 @@ select option {
     width: 90%;
     max-width: 400px;
 }
+
+/* History Date Cards */
+.history-group {
+    background: #ffffff;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+}
+
+.history-date {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--glass-border);
+}
