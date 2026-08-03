@@ -6,8 +6,8 @@ header('Content-Type: application/json');
 
 $host = 'localhost';
 $user = 'root';
-$pass = ''; // Default laragon password is empty
-$db = 'db_absensi';
+$pass = ''; // Sesuaikan jika menggunakan hosting
+$db = 'db_absensi'; // Sesuaikan jika menggunakan hosting
 
 try {
     $conn = new mysqli($host, $user, $pass);
@@ -15,17 +15,18 @@ try {
         die(json_encode(["status" => "error", "message" => "Koneksi ke MySQL gagal: " . $conn->connect_error]));
     }
 } catch (Exception $e) {
-    die(json_encode(["status" => "error", "message" => "Koneksi ke MySQL gagal: " . $e->getMessage()]));
+    die(json_encode(["status" => "error", "message" => "Koneksi ke MySQL gagal. Pastikan database berjalan. Error: " . $e->getMessage()]));
 }
 
-// Buat database jika belum ada
-$sql_db = "CREATE DATABASE IF NOT EXISTS `$db`";
-if ($conn->query($sql_db) === FALSE) {
-    die(json_encode(["status" => "error", "message" => "Gagal membuat database: " . $conn->error]));
+// Coba pilih database
+if (!$conn->select_db($db)) {
+    // Jika tidak ada, coba buat (mungkin gagal di hosting karena hak akses)
+    $sql_db = "CREATE DATABASE IF NOT EXISTS `$db`";
+    if ($conn->query($sql_db) === FALSE) {
+        die(json_encode(["status" => "error", "message" => "Gagal memilih/membuat database '$db'. Jika Anda di hosting, buat database secara manual. Error: " . $conn->error]));
+    }
+    $conn->select_db($db);
 }
-
-// Pilih database tersebut
-$conn->select_db($db);
 
 // Otomatis membuat tabel jika belum ada
 $sql_table = "CREATE TABLE IF NOT EXISTS riwayat_absensi (
