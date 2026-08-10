@@ -1,66 +1,122 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi Sederhana</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Presensi Pegawai</title>
+    <link rel="stylesheet" href="styles.css?v=4">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
         <header>
-            <h1>Absensi Harian</h1>
-            <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-weight: 600; font-size: 1.1rem;">Mahasiswa Magang Sekretaris Daerah-Politeknik Negeri Batam</h3>
+            <h2>Presensi Kehadiran Peserta Pelatihan Bahasa Inggris Bagi ASN Pemerintah Kota Batam</h2>
             <p id="current-date" class="date-display">Memuat tanggal...</p>
         </header>
 
         <main>
-            <div id="alert-message" class="alert hidden"></div>
-
             <form id="attendance-form" class="glass-panel">
                 <div class="form-group">
-                    <label for="employee-name">Pilih Nama Mahasiswa</label>
-                    <select id="employee-name" required>
-                        <option value="" disabled selected>-- Pilih Nama --</option>
-                        <option value="Cindy Anggraeni">Cindy Anggraeni</option>
-                        <option value="Faiza Irna Harahap">Faiza Irna Harahap</option>
-                
+                    <label for="employee-name">Nama</label>
+                    <input type="text" id="employee-name" required placeholder="Nama Lengkap"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); font-family: inherit; background-color: #ffffff;">
+                </div>
+
+                <div class="form-group">
+                    <label for="nip">NIP</label>
+                    <input type="text" id="nip" required placeholder="Nomor Induk Pegawai"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); font-family: inherit; background-color: #ffffff;">
+                </div>
+
+                <div class="form-group">
+                    <label for="jabatan">Jabatan</label>
+                    <input type="text" id="jabatan" required placeholder="Jabatan"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); font-family: inherit; background-color: #ffffff;">
+                </div>
+
+                <div class="form-group">
+                    <label for="opd">Organisasi Perangkat Daerah</label>
+                    <select id="opd" required
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); font-family: inherit; background-color: #ffffff;">
+                        <option value="" disabled selected>Pilih Organisasi Perangkat Daerah</option>
+                        <option value="Inspektorat Kota Batam">Inspektorat Kota Batam</option>
+                        <option value="Badan Perencanaan Pembangunan Derah Kota Batam">Badan Perencanaan Pembangunan Derah Kota Batam</option>
+                        <option value="Badan Pendapatan Daerah Kota Batam">Badan Pendapatan Daerah Kota Batam</option>
+                        <option value="Badan Kepegawaian dan Sumber Daya Manusia Kota Batam">Badan Kepegawaian dan Sumber Daya Manusia Kota Batam</option>
+                        <option value="Dinas Bina Marga dan Sumber Daya Air Kota Batam">Dinas Bina Marga dan Sumber Daya Air Kota Batam</option>
+                        <option value="Dinas Cipta Karya dan Tata Ruang Kota Batam">Dinas Cipta Karya dan Tata Ruang Kota Batam</option>
+                        <option value="Dinas Kebudayaan dan Pariwisata Kota Batam">Dinas Kebudayaan dan Pariwisata Kota Batam</option>
+                        <option value="Dinas Kepemudaan dan Olah Raga Kota Batam">Dinas Kepemudaan dan Olah Raga Kota Batam</option>
+                        <option value="Dinas Kependudukan dan Pencatatan Sipil Kota Batam">Dinas Kependudukan dan Pencatatan Sipil Kota Batam</option>
+                        <option value="Dinas Kesehatan Kota Batam">Dinas Kesehatan Kota Batam</option>
+                        <option value="Dinas Komunikasi dan Informatika Kota Batam">Dinas Komunikasi dan Informatika Kota Batam</option>
+                        <option value="Dinas Lingkungan Hidup Kota Batam">Dinas Lingkungan Hidup Kota Batam</option>
+                        <option value="Dinas Pemberdayaan Perempuan PA P2 dan KB Kota Batam">Dinas Pemberdayaan Perempuan PA P2 dan KB Kota Batam</option>
+                        <option value="Dinas Penanaman Modal dan Pelayanan Terpadu Kota Batam">Dinas Penanaman Modal dan Pelayanan Terpadu Kota Batam</option>
+                        <option value="Dinas Pendidikan Kota Batam">Dinas Pendidikan Kota Batam</option>
+                        <option value="Dinas Perhubungan Kota Batam">Dinas Perhubungan Kota Batam</option>
+                        <option value="Dinas Perumahan Rakyat dan Kawasan Pemukiman Kota Batam">Dinas Perumahan Rakyat dan Kawasan Pemukiman Kota Batam</option>
+                        <option value="Dinas Tenaga Kerja Kota Batam">Dinas Tenaga Kerja Kota Batam</option>
+                        <option value="Dinas Perikanan Kota Batam">Dinas Perikanan Kota Batam</option>
+                        <option value="Kecamatan Batu Aji">Kecamatan Batu Aji</option>
+                        <option value="Kecamatan Bengkong">Kecamatan Bengkong</option>
+                        <option value="Kecamatan Sei Beduk">Kecamatan Sei Beduk</option>
+                        <option value="Kecamatan Nongsa">Kecamatan Nongsa</option>
+                        <option value="Kecamatan Sekupang">Kecamatan Sekupang</option>
+                        <option value="Kecamatan Sagulung">Kecamatan Sagulung</option>
+                        <option value="Bagian Perencanaan dan Keuangan Sekretariat Daerah Kota Batam">Bagian Perencanaan dan Keuangan Sekretariat Daerah Kota Batam</option>
+                        <option value="Bagian Protokol Sekretariat Daerah Kota Batam">Bagian Protokol Sekretariat Daerah Kota Batam</option>
+                        <option value="Bagian Administrasi Pembangunan Sekretariat Daerah Kota Batam">Bagian Administrasi Pembangunan Sekretariat Daerah Kota Batam</option>
+                        <option value="Bagian Perekonomian Sekretariat Daerah Kota Batam">Bagian Perekonomian Sekretariat Daerah Kota Batam</option>
+                        <option value="Bagian Kesejahteraan Rakyat Sekretariat Daerah Kota Batam">Bagian Kesejahteraan Rakyat Sekretariat Daerah Kota Batam</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="tanggal">Tanggal Absensi</label>
-                    <input type="date" id="tanggal" name="tanggal" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; margin-top: 0.5rem; background-color: var(--input-bg);">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="Alamat Email"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); font-family: inherit; background-color: #ffffff;">
                 </div>
 
                 <div class="form-group">
-                    <label for="status">Status Kehadiran</label>
-                    <div class="radio-group">
-                        <label class="radio-card">
-                            <input type="radio" name="status" value="Hadir" required>
-                            <span class="card-content">Hadir</span>
-                        </label>
-                        <label class="radio-card">
-                        <input type="radio" name="status" value="Tidak Hadir">
-                        <span class="card-content">Tidak Hadir</span>
-                    </label>
-                        <label class="radio-card">
-                            <input type="radio" name="status" value="Sakit">
-                            <span class="card-content">Sakit</span>
-                        </label>
-                    </div>
+                    <label for="nohp">No. HP</label>
+                    <input type="tel" id="nohp" required minlength="10" maxlength="15" placeholder="Nomor Handphone"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); font-family: inherit; background-color: #ffffff;">
                 </div>
 
-                <button type="submit" id="submit-btn" class="primary-btn">Simpan Absensi</button>
+                <div class="form-group">
+                    <label for="tanggal">Tanggal Presensi</label>
+                    <input type="date" id="tanggal" name="tanggal" required readonly
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; margin-top: 0.5rem; background-color: #f3f4f6; color: #6b7280; cursor: not-allowed;">
+                </div>
+
+
+
+                <div class="form-group">
+                    <label>Tanda Tangan</label>
+                    <div class="signature-wrapper"
+                        style="border: 2px dashed var(--glass-border); border-radius: 8px; background: #ffffff; padding: 0.5rem; text-align: center;">
+                        <canvas id="signature-pad" width="400" height="150"
+                            style="width: 100%; max-width: 400px; touch-action: none; cursor: crosshair;"></canvas>
+                    </div>
+                    <button type="button" id="btn-clear-signature" class="secondary-btn"
+                        style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; font-size: 0.9rem;">Hapus Tanda
+                        Tangan</button>
+                </div>
+
+                <div class="form-actions" style="display: flex; gap: 1rem;">
+                    <button type="button" id="btn-masuk" class="primary-btn" style="flex: 1;">Absen Masuk</button>
+                    <button type="button" id="btn-pulang" class="secondary-btn"
+                        style="flex: 1; background-color: #f59e0b; color: white; border: none;">Absen Pulang</button>
+                </div>
             </form>
 
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <a href="riwayat.html" class="secondary-btn">Lihat Riwayat Absensi</a>
-            </div>
         </main>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script type="module" src="script.js?v=3"></script>
 </body>
+
 </html>

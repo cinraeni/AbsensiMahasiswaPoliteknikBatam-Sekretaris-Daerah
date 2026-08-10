@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Riwayat Presensi</title>
+    <link rel="stylesheet" href="styles.css?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .history-container {
+            max-width: 600px;
+        }
+
+        .history-group {
+            margin-bottom: 2rem;
+        }
+
+        .history-date {
+            font-size: 1.1rem;
+            color: #818cf8;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+        }
+
+        .top-nav {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Bagian Pop-up Login Admin -->
+    <div id="login-modal" class="modal-overlay" style="z-index: 9999;">
+        <div class="glass-panel modal-content" style="text-align: center;">
+            <h2 style="margin-bottom: 1rem;">Admin Akses</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-muted);">Masukkan PIN untuk mengakses halaman ini.</p>
+            <input type="password" id="admin-pin" placeholder="Masukkan PIN"
+                style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); font-family: inherit; margin-bottom: 1rem; text-align: center; letter-spacing: 2px; font-size: 1.2rem;">
+            <button id="btn-login" class="primary-btn" style="width: 100%;">Masuk</button>
+            <p id="login-error" style="color: #ef4444; margin-top: 1rem; display: none; font-size: 0.9rem;">PIN salah,
+                silakan coba lagi.</p>
+        </div>
+    </div>
+
+    <div class="container history-container" id="main-content" style="display: none;">
+        <header>
+            <h2>Presensi Kehadiran Peserta Pelatihan Bahasa Inggris Bagi ASN Pemerintah Kota Batam</h2>
+                </header>
+
+        <main>
+            <div class="top-nav"
+                style="display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div class="filter-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button id="btn-export" class="secondary-btn"
+                        style="background-color: #10b981; color: white; border: none; padding: 0.6rem 1rem; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="8" y1="13" x2="16" y2="13"></line>
+                            <line x1="8" y1="17" x2="16" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Export Excel
+                    </button>
+                </div>
+            </div>
+
+            <div id="all-history">
+                <!-- Tempat memunculkan list riwayat -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Bagian Pop-up Edit Data -->
+    <div id="edit-modal" class="modal-overlay hidden">
+        <div class="glass-panel modal-content" style="max-width: 600px;">
+            <h2>Edit Presensi</h2>
+            <p id="edit-info" style="margin-bottom: 1rem; color: var(--text-muted);"></p>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group" style="text-align: left; margin-bottom: 0;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500;">Nama
+                        Pegawai:</label>
+                    <input type="text" id="edit-name"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); font-family: inherit;">
+                </div>
+                <div class="form-group" style="text-align: left; margin-bottom: 0;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500;">NIP /
+                        NIM:</label>
+                    <input type="text" id="edit-nip"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); font-family: inherit;">
+                </div>
+                <div class="form-group" style="text-align: left; margin-bottom: 0;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500;">Jabatan /
+                        Jurusan:</label>
+                    <input type="text" id="edit-jabatan"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); font-family: inherit;">
+                </div>
+                <div class="form-group" style="text-align: left; margin-bottom: 0;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500;">Organisasi
+                        Perangkat Daerah:</label>
+                    <select id="edit-opd"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); font-family: inherit;">
+                        <option value="" disabled selected>Pilih Organisasi Perangkat Daerah</option>
+                        <option value="Inspektorat Kota Batam">Inspektorat Kota Batam</option>
+                        <option value="Badan Perencanaan Pembangunan Derah Kota Batam">Badan Perencanaan Pembangunan
+                            Derah Kota Batam</option>
+                        <option value="Badan Pendapatan Daerah Kota Batam">Badan Pendapatan Daerah Kota Batam</option>
+                        <option value="Badan Kepegawaian dan Sumber Daya Manusia Kota Batam">Badan Kepegawaian dan
+                            Sumber Daya Manusia Kota Batam</option>
+                        <option value="Dinas Bina Marga dan Sumber Daya Air Kota Batam">Dinas Bina Marga dan Sumber Daya
+                            Air Kota Batam</option>
+                        <option value="Dinas Cipta Karya dan Tata Ruang Kota Batam">Dinas Cipta Karya dan Tata Ruang
+                            Kota Batam</option>
+                        <option value="Dinas Kebudayaan dan Pariwisata Kota Batam">Dinas Kebudayaan dan Pariwisata Kota
+                            Batam</option>
+                        <option value="Dinas Kepemudaan dan Olah Raga Kota Batam">Dinas Kepemudaan dan Olah Raga Kota
+                            Batam</option>
+                        <option value="Dinas Kependudukan dan Pencatatan Sipil Kota Batam">Dinas Kependudukan dan
+                            Pencatatan Sipil Kota Batam</option>
+                        <option value="Dinas Kesehatan Kota Batam">Dinas Kesehatan Kota Batam</option>
+                        <option value="Dinas Komunikasi dan Informatika Kota Batam">Dinas Komunikasi dan Informatika
+                            Kota Batam</option>
+                        <option value="Dinas Lingkungan Hidup Kota Batam">Dinas Lingkungan Hidup Kota Batam</option>
+                        <option value="Dinas Pemberdayaan Perempuan PA P2 dan KB Kota Batam">Dinas Pemberdayaan
+                            Perempuan PA P2 dan KB Kota Batam</option>
+                        <option value="Dinas Penanaman Modal dan Pelayanan Terpadu Kota Batam">Dinas Penanaman Modal dan
+                            Pelayanan Terpadu Kota Batam</option>
+                        <option value="Dinas Pendidikan Kota Batam">Dinas Pendidikan Kota Batam</option>
+                        <option value="Dinas Perhubungan Kota Batam">Dinas Perhubungan Kota Batam</option>
+                        <option value="Dinas Perumahan Rakyat dan Kawasan Pemukiman Kota Batam">Dinas Perumahan Rakyat
+                            dan Kawasan Pemukiman Kota Batam</option>
+                        <option value="Dinas Tenaga Kerja Kota Batam">Dinas Tenaga Kerja Kota Batam</option>
+                        <option value="Dinas Perikanan Kota Batam">Dinas Perikanan Kota Batam</option>
+                        <option value="Kecamatan Batu Aji">Kecamatan Batu Aji</option>
+                        <option value="Kecamatan Bengkong">Kecamatan Bengkong</option>
+                        <option value="Kecamatan Sei Beduk">Kecamatan Sei Beduk</option>
+                        <option value="Kecamatan Nongsa">Kecamatan Nongsa</option>
+                        <option value="Kecamatan Sekupang">Kecamatan Sekupang</option>
+                        <option value="Kecamatan Sagulung">Kecamatan Sagulung</option>
+                        <option value="Bagian Perencanaan dan Keuangan Sekretariat Daerah Kota Batam">Bagian Perencanaan
+                            dan Keuangan Sekretariat Daerah Kota Batam</option>
+                        <option value="Bagian Protokol Sekretariat Daerah Kota Batam">Bagian Protokol Sekretariat Daerah
+                            Kota Batam</option>
+                        <option value="Bagian Administrasi Pembangunan Sekretariat Daerah Kota Batam">Bagian
+                            Administrasi Pembangunan Sekretariat Daerah Kota Batam</option>
+                        <option value="Bagian Perekonomian Sekretariat Daerah Kota Batam">Bagian Perekonomian
+                            Sekretariat Daerah Kota Batam</option>
+                        <option value="Bagian Kesejahteraan Rakyat Sekretariat Daerah Kota Batam">Bagian Kesejahteraan
+                            Rakyat Sekretariat Daerah Kota Batam</option>
+
+                    </select>
+                </div>
+                <div class="form-group" style="text-align: left; margin-bottom: 0;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500;">Email:</label>
+                    <input type="email" id="edit-email"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); font-family: inherit;">
+                </div>
+                <div class="form-group" style="text-align: left; margin-bottom: 0;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500;">No
+                        HP:</label>
+                    <input type="text" id="edit-nohp"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); font-family: inherit;">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button id="cancel-edit-btn" class="secondary-btn" style="flex: 1;">Batal</button>
+                <button id="save-edit-btn" class="primary-btn" style="flex: 1;">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bagian Pop-up Detail Presensi -->
+    <div id="detail-modal" class="modal-overlay hidden">
+        <div class="glass-panel modal-content" style="max-width: 550px; padding: 1.5rem;">
+            <h2 style="text-align: center; margin-bottom: 1rem; color: var(--primary); font-size: 1.4rem;">Detail
+                Presensi</h2>
+            <div id="detail-content" style="text-align: left;">
+                <!-- Tempat memunculkan isi detail -->
+            </div>
+            <div style="margin-top: 1rem; text-align: center;">
+                <p
+                    style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 1px;">
+                    Tanda Tangan</p>
+                <div
+                    style="background: #f8fafc; border: 1px dashed var(--glass-border); border-radius: 8px; padding: 0.5rem; display: inline-block; min-width: 200px;">
+                    <img id="detail-signature" src="" alt="Tanda Tangan"
+                        style="max-width: 100%; max-height: 80px; display: block; margin: 0 auto;">
+                </div>
+            </div>
+            <button id="close-detail-btn" class="primary-btn"
+                style="width: 100%; margin-top: 1rem; padding: 0.6rem;">Tutup</button>
+        </div>
+    </div>
+
+    <script type="module" src="admin.js?v=3"></script>
+</body>
+
+</html>

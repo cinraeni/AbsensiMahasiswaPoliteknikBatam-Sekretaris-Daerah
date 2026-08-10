@@ -1,15 +1,14 @@
 import { db } from './firebase-config.js';
-import { collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+import { collection, addDoc, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     const dateDisplay = document.getElementById('current-date');
     const form = document.getElementById('attendance-form');
     const submitBtn = document.getElementById('submit-btn');
-    const alertBox = document.getElementById('alert-message');
     
-    // Inisialisasi Data
+    // Ambil data hari ini
     const currentDate = new Date();
-    const dayOfWeek = currentDate.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
+    const dayOfWeek = currentDate.getDay(); // 0 = Minggu, 1 = Senin, dst
     
     // Format Tanggal
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -20,9 +19,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isWeekend) {
         // Nonaktifkan form jika akhir pekan
-        showAlert('Absensi hanya dibuka pada hari kerja (Senin - Jumat).', 'error');
+        showAlert('Presensi hanya dibuka pada hari kerja (Senin - Jumat).', 'error');
         disableForm();
     }
+
+    // --- BAGIAN TANDA TANGAN ---
+    const canvas = document.getElementById('signature-pad');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let signatureEmpty = true;
+
+    // Kasih background putih biar pas disimpan gambarnya nggak transparan/hitam
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    function startDrawing(e) {
+        isDrawing = true;
+        draw(e);
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+        ctx.beginPath();
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+
+        e.preventDefault();
+        
+        let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        const rect = canvas.getBoundingClientRect();
+        
+        // Sesuaikan koordinat kalau ukuran canvas berubah di CSS
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
+
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#1e3a8a"; // Biru tua
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        
+        signatureEmpty = false;
+    }
+
+    // Mouse events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    // Touch events
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    document.getElementById('btn-clear-signature').addEventListener('click', () => {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        signatureEmpty = true;
+    });
+    // --- SELESAI BAGIAN TANDA TANGAN ---
+
 
     // Set nilai default input tanggal ke hari ini
     const tanggalInput = document.getElementById('tanggal');
@@ -32,83 +99,128 @@ document.addEventListener('DOMContentLoaded', () => {
         tanggalInput.value = localISOTime.split('T')[0];
     }
 
-    // Handle Submit
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // Tombol untuk absen masuk dan pulang
+    const btnMasuk = document.getElementById('btn-masuk');
+    const btnPulang = document.getElementById('btn-pulang');
 
+    if (btnMasuk) {
+        btnMasuk.addEventListener('click', () => processAttendance('masuk'));
+    }
+    if (btnPulang) {
+        btnPulang.addEventListener('click', () => processAttendance('pulang'));
+    }
+
+    async function processAttendance(type) {
         if (isWeekend) return;
+        
+        // Pastikan form sudah diisi semua (validasi bawaan HTML5)
+        if (!form.reportValidity()) return;
 
-        const name = document.getElementById('employee-name').value;
-        const status = document.querySelector('input[name="status"]:checked').value;
-        let tanggal = document.getElementById('tanggal') ? document.getElementById('tanggal').value : null;
+        const name = document.getElementById('employee-name').value.trim();
+        const nip = document.getElementById('nip').value.trim();
+        const jabatan = document.getElementById('jabatan').value.trim();
+        const opd = document.getElementById('opd').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const noHp = document.getElementById('nohp').value.trim();
+        const status = 'Hadir';
+        
+        // Ambil waktu sekarang persis saat tombol diklik biar tanggalnya akurat
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000; 
+        const realTanggal = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
 
-        if (!tanggal) {
-            const tzoffset = (new Date()).getTimezoneOffset() * 60000; 
-            tanggal = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
-        }
-
-        if (!name) {
-            showAlert('Silakan pilih nama karyawan.', 'error');
+        if (!name || !nip || !jabatan || !opd || !email || !noHp) {
+            showAlert('Silakan lengkapi semua data profil.', 'error');
             return;
         }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Menyimpan...';
+        if (signatureEmpty) {
+            showAlert('Silakan isi Tanda Tangan Anda.', 'error');
+            return;
+        }
 
-        await saveAttendance(name, status, tanggal);
-        
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Kirim Absensi';
-    });
+        const signatureBase64 = canvas.toDataURL('image/png');
 
-    async function saveAttendance(name, status, tanggal) {
+        const activeBtn = type === 'masuk' ? btnMasuk : btnPulang;
+        const originalText = activeBtn.textContent;
+        activeBtn.disabled = true;
+        activeBtn.textContent = 'Memproses...';
+
         try {
-            // Cek apakah sudah absen di tanggal ini
-            const q = query(collection(db, "riwayat_absensi"), where("nama", "==", name), where("tanggal", "==", tanggal));
+            // Cek apakah sudah absen masuk di tanggal real-time ini dengan NIP ini
+            const q = query(collection(db, "riwayat_absensi"), where("nip", "==", nip), where("tanggal", "==", realTanggal));
             const querySnapshot = await getDocs(q);
             
-            if (!querySnapshot.empty) {
-                showAlert(`${name} sudah melakukan absensi pada tanggal ini.`, 'error');
-                return;
+            const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            if (type === 'masuk') {
+                if (!querySnapshot.empty) {
+                    showAlert(`Pegawai dengan NIP ${nip} sudah melakukan presensi masuk hari ini.`, 'error');
+                } else {
+                    // Simpan data presensi masuk ke database
+                    const recordedJamMasuk = currentTime;
+                    await addDoc(collection(db, "riwayat_absensi"), {
+                        nama: name,
+                        nip: nip,
+                        jabatan: jabatan,
+                        opd: opd,
+                        email: email,
+                        noHp: noHp,
+                        ttd: signatureBase64,
+                        status: status,
+                        tanggal: realTanggal,
+                        jamMasuk: recordedJamMasuk,
+                        jamPulang: "-",
+                        createdAt: new Date().toISOString()
+                    });
+                    showAlert('Presensi MASUK berhasil disimpan.', 'success');
+                    form.reset();
+                    resetDate();
+                    document.getElementById('btn-clear-signature').click(); // Reset ttd
+                }
+            } else if (type === 'pulang') {
+                if (querySnapshot.empty) {
+                    showAlert(`Pegawai dengan NIP ${nip} belum melakukan presensi masuk hari ini.`, 'error');
+                } else {
+                    // Update data untuk jam pulang
+                    const docId = querySnapshot.docs[0].id;
+                    const existingData = querySnapshot.docs[0].data();
+                    
+                    if (existingData.jamPulang !== "-") {
+                        showAlert(`Pegawai dengan NIP ${nip} sudah melakukan presensi pulang hari ini.`, 'error');
+                    } else {
+                        await updateDoc(doc(db, "riwayat_absensi", docId), {
+                            jamPulang: currentTime
+                        });
+                        showAlert('Presensi PULANG berhasil dicatat.', 'success');
+                        form.reset();
+                        resetDate();
+                        document.getElementById('btn-clear-signature').click(); // Reset ttd
+                    }
+                }
             }
-
-            // Simpan data ke Firestore
-            await addDoc(collection(db, "riwayat_absensi"), {
-                nama: name,
-                status: status,
-                tanggal: tanggal,
-                createdAt: new Date().toISOString()
-            });
-
-            form.reset();
-            
-            // Setel ulang tanggal ke hari ini setelah reset
-            if (tanggalInput) {
-                const tzoffset = (new Date()).getTimezoneOffset() * 60000;
-                tanggalInput.value = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
-            }
-
-            showAlert('Absensi berhasil disimpan.', 'success');
         } catch (error) {
             console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat menyimpan data.', 'error');
+            showAlert('Terjadi kesalahan saat memproses data.', 'error');
+        } finally {
+            activeBtn.disabled = false;
+            activeBtn.textContent = originalText;
+        }
+    }
+
+    function resetDate() {
+        if (tanggalInput) {
+            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+            tanggalInput.value = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
         }
     }
 
     function showAlert(message, type) {
-        alertBox.textContent = message;
-        alertBox.className = `alert ${type}`;
-        
-        setTimeout(() => {
-            if (!isWeekend) {
-                alertBox.className = 'alert hidden';
-            }
-        }, 3000);
+        alert(message);
     }
 
     function disableForm() {
         document.getElementById('employee-name').disabled = true;
-        document.querySelectorAll('input[name="status"]').forEach(input => input.disabled = true);
+        // document.querySelectorAll('input[name="status"]').forEach(input => input.disabled = true);
         submitBtn.disabled = true;
     }
 });
